@@ -1,0 +1,42 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+steps:
+- name: docker-push
+  image: plugins/docker
+  settings:
+    registry: rg.fr-par.scw.cloud/fruitice
+    repo: rg.fr-par.scw.cloud/fruitice/fruit-socks5-server
+    tag: ${DRONE_COMMIT}
+    build_args_from_env:
+      - DRONE_COMMIT
+      - DRONE_SYSTEM_HOST
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  privileged: true
+  when:
+    branch: master
+    event: push
+    status: success
+
+- name: Generate infrastructure PR
+  image: keymetrics/drone-plugin-auto-pr
+  environment:
+    GITHUB_OAUTH_TOKEN:
+      from_secret: github_token
+  settings:
+    owner: f-hj
+    repository: my-apps
+    regex: 'socks5serverTag: ([A-Za-z0-9.]+)'
+    release: false
+    files:
+      - 'fruitice/values.yaml'
+    message: 'chore: update fruit-socks5-server version'
