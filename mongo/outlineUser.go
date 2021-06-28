@@ -67,6 +67,7 @@ func (r *Roach) AddUser(ctx context.Context, user *OutlineUser) (string, error) 
 	finalUser := &OutlineUser{
 		User:   user.User,
 		ID:     user.User + "_" + user.ID,
+		Cipher: user.Cipher,
 		Secret: user.Secret,
 	}
 
