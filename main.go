@@ -55,10 +55,10 @@ func main() {
 	startOutlineServer(db, ss)
 	log.Println("outline ok")
 
-	startWebServer(db)
+	startWebServer(db, ss)
 }
 
-func startWebServer(db mongo.Roach) {
+func startWebServer(db mongo.Roach, ss *outline.SSServer) {
 	e := echo.New()
 	e.Use(middleware.CORS())
 
@@ -114,6 +114,8 @@ func startWebServer(db mongo.Roach) {
 			return echo.NewHTTPError(http.StatusBadRequest, "cannot add user")
 		}
 
+		go reloadOutlineServer(db, ss)
+
 		return c.JSON(http.StatusOK, struct {
 			ID string `json:"id"`
 		}{
@@ -136,6 +138,8 @@ func startWebServer(db mongo.Roach) {
 			return echo.NewHTTPError(http.StatusInternalServerError, "cannot delete user")
 		}
 
+		go reloadOutlineServer(db, ss)
+
 		return c.JSON(http.StatusOK, struct {
 			Success bool `json:"success"`
 		}{
@@ -146,6 +150,15 @@ func startWebServer(db mongo.Roach) {
 	if err := e.Start(":80"); err != nil {
 		panic(err)
 	}
+}
+
+func reloadOutlineServer(db mongo.Roach, ss *outline.SSServer) {
+	users, err := db.ListAllUsers(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	ss.Reload(users)
 }
 
 // startOutlineServer will exit when successfully listening

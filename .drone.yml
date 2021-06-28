@@ -7,7 +7,7 @@ steps:
   image: plugins/docker
   settings:
     registry: rg.fr-par.scw.cloud/fruitice
-    repo: rg.fr-par.scw.cloud/fruitice/fruit-socks5-server
+    repo: rg.fr-par.scw.cloud/fruitice/fruit-outline-server
     tag: ${DRONE_COMMIT}
     build_args_from_env:
       - DRONE_COMMIT
@@ -22,10 +22,6 @@ steps:
     DOCKER_PASSWORD:
       from_secret: docker_password
   privileged: true
-  when:
-    branch: master
-    event: push
-    status: success
 
 - name: Generate infrastructure PR
   image: keymetrics/drone-plugin-auto-pr
@@ -35,8 +31,12 @@ steps:
   settings:
     owner: f-hj
     repository: my-apps
-    regex: 'socks5serverTag: ([A-Za-z0-9.]+)'
+    regex: 'outlineserverTag: ([A-Za-z0-9.]+)'
     release: false
     files:
       - 'fruitice/values.yaml'
-    message: 'chore: update fruit-socks5-server version'
+    message: 'chore: update fruit-outline-server version'
+  when:
+    branch: main
+    event: push
+    status: success
