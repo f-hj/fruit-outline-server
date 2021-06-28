@@ -13,6 +13,6 @@ FROM alpine:3.13.1
 RUN sed -i 's/dl-cdn/nl/' /etc/apk/repositories
 RUN apk add -U --no-cache ca-certificates
 
-COPY --from=builder /data/fruit-socks5-server /bin/fruit-socks5-server
+COPY --from=builder /data/fruit-outline-server /bin/fruit-outline-server
 
-ENTRYPOINT [ "/bin/fruit-socks5-server" ]
+ENTRYPOINT [ "/bin/fruit-outline-server" ]
