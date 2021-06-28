@@ -94,9 +94,6 @@ func startWebServer(db mongo.Roach, ss *outline.SSServer) {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
-		for _, user := range users {
-			user.Secret = ""
-		}
 		return c.JSON(http.StatusOK, users)
 	})
 
@@ -117,9 +114,13 @@ func startWebServer(db mongo.Roach, ss *outline.SSServer) {
 		go reloadOutlineServer(db, ss)
 
 		return c.JSON(http.StatusOK, struct {
-			ID string `json:"id"`
+			ID     string `json:"id"`
+			Cipher string `json:"cipher"`
+			Secret string `json:"secret"`
 		}{
-			ID: id,
+			ID:     id,
+			Cipher: user.Cipher,
+			Secret: user.Secret,
 		})
 	})
 
