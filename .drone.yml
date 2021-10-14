@@ -23,8 +23,8 @@ steps:
       from_secret: docker_password
   privileged: true
 
-- name: Generate infrastructure PR
-  image: keymetrics/drone-plugin-auto-pr
+- name: Update chart
+  image: florianhj/drone-auto-pr:1.0.6
   environment:
     GITHUB_OAUTH_TOKEN:
       from_secret: github_token
