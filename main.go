@@ -169,5 +169,7 @@ func startOutlineServer(db mongo.Roach, ss *outline.SSServer) {
 		panic(err)
 	}
 
-	ss.Start(users)
+	if err := ss.Start(users); err != nil {
+		panic(err)
+	}
 }

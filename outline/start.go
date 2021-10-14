@@ -11,6 +11,8 @@ import (
 	"github.com/Jigsaw-Code/outline-ss-server/service/metrics"
 	ss "github.com/Jigsaw-Code/outline-ss-server/shadowsocks"
 	"github.com/f-hj/fruit-outline-server/mongo"
+	"github.com/oschwald/geoip2-golang"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // 59 seconds is most common timeout for servers that do not respond to invalid requests
@@ -87,6 +89,7 @@ func (s *SSServer) Start(users []*mongo.OutlineUser) error {
 }
 
 func (s *SSServer) Reload(users []*mongo.OutlineUser) error {
+	fmt.Printf("Reload with %d users\n", len(users))
 	portCiphers := &list.List{}
 	for _, user := range users {
 		cipher, err := ss.NewCipher(user.Cipher, user.Secret)
@@ -94,6 +97,7 @@ func (s *SSServer) Reload(users []*mongo.OutlineUser) error {
 			return fmt.Errorf("Failed to create cipher for key %v: %v", user.ID, err)
 		}
 		entry := service.MakeCipherEntry(user.ID, cipher, user.Secret)
+		fmt.Printf("  Add user %s with cipher %s\n", user.ID, user.Cipher)
 		portCiphers.PushBack(&entry)
 	}
 
@@ -113,8 +117,12 @@ func (s *SSServer) Stop() error {
 }
 
 func New() (*SSServer, error) {
+	var ipCountryDB *geoip2.Reader
+	m := metrics.NewPrometheusShadowsocksMetrics(ipCountryDB, prometheus.DefaultRegisterer)
+	m.SetBuildInfo("undefined")
 	server := &SSServer{
 		natTimeout:  defaultNatTimeout,
+		m:           m,
 		replayCache: service.NewReplayCache(defaultReplayHistory),
 		ports:       make(map[int]*ssPort),
 	}
